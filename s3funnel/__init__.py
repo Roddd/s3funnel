@@ -2,6 +2,7 @@ import logging
 log = logging.getLogger(__name__)
 
 import boto
+import boto.s3.connection
 import workerpool
 
 from boto.exception import BotoServerError, BotoClientError, S3ResponseError
@@ -36,9 +37,12 @@ class S3ToolBox(object):
     Container object for resources needed to access S3.
     This includes a connection to S3 and an instance of the bucket.
     """
-    def __init__(self, aws_key, aws_secret_key, secure):
+    def __init__(self, aws_key, aws_secret_key, provider, host, port, secure):
         self.aws_key = aws_key
         self.aws_secret_key = aws_secret_key
+        self.provider = provider
+        self.host = host
+        self.port = port
         self.secure = secure
 
         self.reset()
@@ -48,11 +52,19 @@ class S3ToolBox(object):
         self.buckets = {}
 
     def get_conn(self):
-        "Get an S3 connection instance (cached)"
+        "Get a connection instance (cached)"
         if self.conn: return self.conn
 
-        log.debug("Starting new S3 connection.")
-        self.conn = boto.connect_s3(self.aws_key, self.aws_secret_key, is_secure=self.secure)
+        if self.provider == "Ceph" or self.provider == "Swift":
+            log.debug("Starting new connection.")
+            self.conn = boto.s3.connection.S3Connection(self.aws_key, self.aws_secret_key, is_secure=self.secure,
+                                                        host=self.host, port=self.port,
+                                                        calling_format=boto.s3.connection.OrdinaryCallingFormat())
+        else:
+            # Assume AWS to be catch all
+            log.debug("Starting new AWS S3 connection.")
+            self.conn = boto.connect_s3(self.aws_key, self.aws_secret_key, is_secure=self.secure)
+
         return self.conn
 
     def get_bucket(self, name):
@@ -93,6 +105,10 @@ class S3Funnel(object):
         self.aws_secret_key = aws_secret_key or config.get('aws_secret_key')
 
         self.config = config
+        self.provider = config.get('provider', 'AWS')
+        self.host = config.get('host', '')
+        self.port = config.get('port', '')
+ 
         self.numthreads = config.get('numthreads', 5)
         self.maxjobs = config.get('maxjobs', self.numthreads*2)
         self.secure = config.get('secure', True)
@@ -101,7 +117,7 @@ class S3Funnel(object):
         self.conn = None
         self.buckets = {}
 
-        toolbox = S3ToolBox(self.aws_key, self.aws_secret_key, self.secure)
+        toolbox = S3ToolBox(self.aws_key, self.aws_secret_key, self.provider, self.host, self.port, self.secure)
         self._get_conn = toolbox.get_conn
         self._get_bucket = toolbox.get_bucket
 
@@ -114,7 +130,7 @@ class S3Funnel(object):
         if self.pool: return self.pool
 
         def toolbox_factory():
-            return S3ToolBox(self.aws_key, self.aws_secret_key, self.secure)
+            return S3ToolBox(self.aws_key, self.aws_secret_key, self.provider, self.host, self.port, self.secure)
         def worker_factory(job_queue):
             return workerpool.EquippedWorker(job_queue, toolbox_factory)
 

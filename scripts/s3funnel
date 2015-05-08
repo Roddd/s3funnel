@@ -62,6 +62,9 @@ def main():
     parser = OptionParser(usage)
     parser.add_option("-a", "--aws_key",    dest="aws_key", type="string", help="Overrides AWS_ACCESS_KEY_ID environment variable")
     parser.add_option("-s", "--aws_secret_key", dest="aws_secret_key", type="string", help="Overrides AWS_SECRET_ACCESS_KEY environment variable")
+    parser.add_option("--provider", dest="provider", type="string", help="Select storage provider (AWS, Swift, Ceph) [default: AWS]")
+    parser.add_option("--host", dest="host", type="string", help="[Optional] Alternate host")
+    parser.add_option("--port", dest="port", type="int", help="[Optional] Alternate port")
     parser.add_option("-t", "--threads",    dest="numthreads", default=1, type="int", metavar="N", help="Number of threads to use [default: %default]")
     parser.add_option("-T", "--timeout",    dest="timeout", default=0, type="float", metavar="SECONDS", help="Socket timeout time, 0 is never [default: %default]")
     parser.add_option("--insecure",         dest="secure", action="store_false", default=True, help="Don't use secure (https) connection")
@@ -162,8 +165,11 @@ def main():
               'list_marker': options.list_marker or '',
               'list_prefix': options.list_prefix or '',
               'list_delimiter': options.list_delimiter or '',
+              'provider': options.provider,
               'aws_key': aws_key,
               'aws_secret_key': aws_secret_key,
+              'host': options.host,
+              'port': options.port,
               'secure': options.secure,
               'bucket': bucket,
               'source_bucket': options.source_bucket, 
