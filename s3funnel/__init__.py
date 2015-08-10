@@ -40,7 +40,7 @@ class S3ToolBox(object):
     def __init__(self, aws_key, aws_secret_key, provider, host, port, secure):
         self.aws_key = aws_key
         self.aws_secret_key = aws_secret_key
-        self.provider = provider
+        self.provider = provider.lower()
         self.host = host
         self.port = port
         self.secure = secure
@@ -55,7 +55,7 @@ class S3ToolBox(object):
         "Get a connection instance (cached)"
         if self.conn: return self.conn
 
-        if self.provider == "Ceph" or self.provider == "Swift":
+        if self.provider == "ceph" or self.provider == "swift":
             log.debug("Starting new connection.")
             self.conn = boto.s3.connection.S3Connection(self.aws_key, self.aws_secret_key, is_secure=self.secure,
                                                         host=self.host, port=self.port,
