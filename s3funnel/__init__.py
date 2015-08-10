@@ -147,7 +147,7 @@ class S3Funnel(object):
         "Create bucket named ``name``"
         conn = self._get_conn()
         try:
-            b = conn.create_bucket(name)
+            b = conn.create_bucket(name, location=config.get('region'))
             log.info("Created bucket: %s" % name)
         except BotoServerError, e:
             raise FunnelError("Bucket could not be created: %s" % name, key=name)
