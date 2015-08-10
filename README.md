@@ -10,17 +10,21 @@ This project is a clone of <https://github.com/shazow>'s s3funnel from google co
 # Edits
 
 Commits from https://github.com/nickryand/s3funnel have been added in.
+```
 d50fa35eeaf4473bc59ce25eac5ad17d9c0819a3
 bf32294dfb3c195938442e5476720d799eb5b6b9
 d2f216dd551032cf80742ab6dda643b25353cacb
+```
 
 Then I added Ceph and Swift as alternate storage backends. Provider is required. If a provider
 is not defined, it defaults to AWS.
 
+```
 New options:
   --provider  Select storage provider (AWS, Swift, Ceph) [default: AWS]
   --host      [Optional] Alternate host
   --port      [Optional] Alternate port
+```
 
 ## Usage
     $ s3funnel --help
