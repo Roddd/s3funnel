@@ -40,7 +40,10 @@ class S3ToolBox(object):
     def __init__(self, aws_key, aws_secret_key, provider, host, port, secure):
         self.aws_key = aws_key
         self.aws_secret_key = aws_secret_key
-        self.provider = provider.lower()
+        if provider:
+            self.provider = provider.lower()
+        else:
+           provider = "aws"
         self.host = host
         self.port = port
         self.secure = secure
